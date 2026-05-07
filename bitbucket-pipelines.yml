@@ -1,0 +1,30 @@
+# Phase 10 — CI for Bitbucket Pipelines.
+# Mirror of .github/workflows/ci.yml: type-check + tests on every push.
+# Deploys still go through Vercel's Git integration (set the Bitbucket
+# repo on the Vercel project's Settings → Git pane).
+
+image: node:20
+
+definitions:
+  caches:
+    npm: ~/.npm
+
+pipelines:
+  default:
+    - step:
+        name: Type-check + tests
+        caches: [npm]
+        script:
+          - npm ci
+          - npm run typecheck
+          - npm test
+
+  branches:
+    main:
+      - step:
+          name: Type-check + tests (main)
+          caches: [npm]
+          script:
+            - npm ci
+            - npm run typecheck
+            - npm test

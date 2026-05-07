@@ -1,0 +1,19 @@
+{
+  "name": "create-cms-vercel",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Scaffold a new cms-vercel project",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "create-cms-vercel": "./bin/cli.mjs"
+  },
+  "files": [
+    "bin",
+    "template",
+    "README.md"
+  ]
+}

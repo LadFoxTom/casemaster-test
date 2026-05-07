@@ -1,0 +1,86 @@
+# Phase 21 — parity workflow.
+#
+# Runs CaseMaster.Web.exe (Windows) and cms-vercel (Linux/Vercel deploy)
+# against the same Postgres, then diffs HTTP responses for a curated URL
+# list. Manually triggered (workflow_dispatch) because:
+#
+#   1. The CaseMaster runtime is a closed-source binary you must
+#      provide — drop a zip into the `casemaster-runtime` Actions secret
+#      (a base64-encoded zip), or check it out from a private repo.
+#   2. Both runtimes need to point at a parity-test Postgres seeded
+#      with a known fixture. Don't run against production.
+#
+# How to run:
+#   gh workflow run parity.yml \
+#     -f vercel_url=https://your-app.vercel.app \
+#     -f db_url=postgresql://parity:…@…/parity_db
+name: Parity
+
+on:
+  workflow_dispatch:
+    inputs:
+      vercel_url:
+        description: 'cms-vercel deployment URL (no trailing slash)'
+        required: true
+      db_url:
+        description: 'Postgres connection string for both runtimes'
+        required: true
+
+jobs:
+  parity:
+    # CaseMaster.Web.exe is .NET on Windows; Linux runners can't host it.
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # Decrypt the CaseMaster runtime from the secret. Expects a base64
+      # zip in CASEMASTER_RUNTIME_B64 with the runtime/ directory at the
+      # zip root.
+      - name: Stage CaseMaster runtime
+        env:
+          CMS_RUNTIME_B64: ${{ secrets.CASEMASTER_RUNTIME_B64 }}
+        if:   ${{ env.CMS_RUNTIME_B64 != '' }}
+        shell: pwsh
+        run: |
+          [System.IO.File]::WriteAllBytes('cms.zip', [System.Convert]::FromBase64String($env:CMS_RUNTIME_B64))
+          Expand-Archive -Path cms.zip -DestinationPath cms-runtime -Force
+          Get-ChildItem cms-runtime -Recurse | Select-Object -First 5
+
+      - name: Start CaseMaster.Web.exe in background
+        env:
+          ASPNETCORE_URLS: http://localhost:5050
+          DATABASE_URL:    ${{ inputs.db_url }}
+        if:   ${{ env.CMS_RUNTIME_B64 != '' }}
+        shell: pwsh
+        run: |
+          $proc = Start-Process -PassThru -WindowStyle Hidden `
+            -FilePath cms-runtime/runtime/CaseMaster.Web.exe `
+            -WorkingDirectory cms-runtime/runtime
+          # wait until kestrel is up
+          for ($i = 0; $i -lt 60; $i++) {
+            try { Invoke-WebRequest -Uri http://localhost:5050/ -TimeoutSec 5 | Out-Null; break } catch { Start-Sleep -Seconds 1 }
+          }
+          "$($proc.Id)" | Out-File official.pid
+
+      - name: Run parity tests
+        env:
+          CMS_OFFICIAL_URL: http://localhost:5050
+          CMS_VERCEL_URL:   ${{ inputs.vercel_url }}
+          DATABASE_URL:     ${{ inputs.db_url }}
+        run: npm test
+
+      - name: Stop CaseMaster
+        if:   always()
+        shell: pwsh
+        run: |
+          if (Test-Path official.pid) {
+            $pid = Get-Content official.pid
+            Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
+          }

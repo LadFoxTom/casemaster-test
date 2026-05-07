@@ -1,0 +1,37 @@
+/* Phase 8 fixture — proves static assets ship via Vercel's public/ tree.
+   In production you'd copy the official CaseMaster runtime's static/lib
+   (bootstrap, font-awesome, fullcalendar, …) into public/lib/ and refer
+   to them as /static/lib/<name>. The /static/* → root rewrite in
+   vercel.json keeps the official runtime's URL conventions intact. */
+
+:root {
+  --cms-bg:        #f8fafc;
+  --cms-card:      #ffffff;
+  --cms-text:      #0f172a;
+  --cms-muted:     #475569;
+  --cms-accent:    #3b82f6;
+  --cms-shadow:    0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--cms-bg);
+  color: var(--cms-text);
+  margin: 0;
+  padding: 2rem;
+  line-height: 1.5;
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  background: var(--cms-card);
+  padding: 2rem 2.5rem;
+  border-radius: 12px;
+  box-shadow: var(--cms-shadow);
+}
+
+h1 { margin: 0; font-size: 1.6rem; font-weight: 600; }
+h2 { margin: 1.5rem 0 0.5rem; font-size: 1.15rem; }
+p  { color: var(--cms-muted); }
+.cms-from-static { color: var(--cms-accent); font-weight: 600; }

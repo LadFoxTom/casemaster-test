@@ -1,0 +1,46 @@
+// Phase 2 fixture — first user-visible page rendered by cms-vercel.
+// Exercises: protected resource, page.get, page.render, qualifier
+// rendering (page/container, page/content, page/title, page/html),
+// and resolveTemplate({{ expr }}).
+function hello()
+    set('greeting', 'Hello from cms-vercel')
+    set('subtitle', concat('Phase 2 — pages render. Time on server: ', formatString('{0}', sum(1, 1)), ' (proves we ran code)'))
+    set('main', page.get('./helloBody'))
+    page.render(page.get('./helloShell'))
+end-function
+
+protected resource helloBody
+    <@page/container
+        content: <@page/content
+            title: <@page/title label: [greeting]>,
+            content: <@page/html resolveTemplate(
+                `<p style="margin-top:1rem;color:#475569;font-family:system-ui,sans-serif;">
+                    {{[subtitle]}}
+                </p>
+                <p style="margin-top:0.5rem;color:#94a3b8;font-size:13px;font-family:system-ui,sans-serif;">
+                    This page was parsed and interpreted by cms-vercel; not by CaseMaster.Web.exe.
+                </p>`
+            )>
+        >
+    >
+end-resource
+
+protected resource helloShell
+    <@page/html resolveTemplate(
+        `<!doctype html>
+        <html lang="en">
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>{{[greeting]}}</title>
+            <link rel="stylesheet" href="/static/css/app.css?v=0.0.1">
+        </head>
+        <body>
+            {{[main]}}
+            <p class="cms-from-static" style="margin-top:2rem;text-align:center;font-size:12px">
+                CSS served from /static/css/app.css via the Vercel public/ tree.
+            </p>
+        </body>
+        </html>`
+    )>
+end-resource

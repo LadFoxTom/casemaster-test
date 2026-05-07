@@ -1,0 +1,26 @@
+// Starter page for a freshly-scaffolded cms-vercel project. Reach it at
+// http://localhost:3000/page/foo/f/hello once the runtime is up.
+function hello()
+    set('greeting', 'Hello from cms-vercel')
+    set('main', page.get('./helloBody'))
+    page.render(page.get('./helloShell'))
+end-function
+
+protected resource helloBody
+    <@page/container
+        content: <@page/content
+            title: <@page/title label: [greeting]>,
+            content: <@page/html `<p>Edit <code>app/page/hello.cms</code> and refresh.</p>`>
+        >
+    >
+end-resource
+
+protected resource helloShell
+    <@page/html resolveTemplate(
+        `<!doctype html><html lang="en"><head>
+        <meta charset="utf-8"><title>{{[greeting]}}</title>
+        </head><body style="font-family:system-ui;padding:2rem">
+        {{[main]}}
+        </body></html>`
+    )>
+end-resource

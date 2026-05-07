@@ -1,0 +1,11 @@
+node_modules/
+.vercel/
+.env
+.env.local
+.env.*.local
+.cmsv/
+dist/
+packages/*/dist/
+*.log
+.DS_Store
+.vercel

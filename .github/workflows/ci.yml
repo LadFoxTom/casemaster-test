@@ -1,0 +1,33 @@
+# Phase 10 — CI for GitHub Actions.
+# Runs on every push and PR; type-checks + tests; gates the auto-deploy
+# Vercel does on merges to main. The actual deploy is wired through the
+# Vercel ↔ GitHub integration (Settings → Git on the Vercel dashboard),
+# not from this workflow — that way only one source-of-truth deploys.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # Type-check is fast and catches the bulk of regressions.
+      - run: npm run typecheck
+
+      # Unit suite. Live-DB tests skip when DATABASE_URL is unset (CI
+      # default). Add the secret on the repo if you want them gated here.
+      - run: npm test
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "public",
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "{app,packages}/**"
+    }
+  },
+  "rewrites": [
+    { "source": "/page/:path*",        "destination": "/api?_p=/page/:path*" },
+    { "source": "/maintenance/:path*", "destination": "/api?_p=/maintenance/:path*" },
+    { "source": "/static/:path*",      "destination": "/:path*" }
+  ],
+  "crons": [
+    {
+      "path": "/page/foo/f/ping",
+      "schedule": "0 6 * * *"
+    }
+  ]
+}

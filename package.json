@@ -1,0 +1,34 @@
+{
+  "name": "cms-vercel-monorepo",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Monorepo root — npm workspace hosting cms-vercel + the example deploy",
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "//local-dev":    "Use `npx vercel dev` directly. We deliberately don't expose `npm run dev` because Vercel CLI v50+ recurses if it finds a `dev` script that runs `vercel dev`.",
+    "build":          "npm --workspaces --if-present run build",
+    "postinstall":    "npm --workspaces --if-present run build",
+    "typecheck":      "tsc --noEmit",
+    "test":           "vitest run",
+    "deploy":         "vercel --prod",
+    "deploy:preview": "vercel"
+  },
+  "dependencies": {
+    "cms-vercel": "*",
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/pg": "^8.11.0",
+    "@vercel/node": "^3.2.0",
+    "typescript": "^5.4.0",
+    "vercel": "^39.0.0",
+    "vitest": "^1.6.0"
+  }
+}

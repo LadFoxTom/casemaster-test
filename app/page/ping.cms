@@ -1,0 +1,16 @@
+// DB connectivity check. Doesn't rely on any project-specific table —
+// counts rows in information_schema.tables, which exists on every
+// Postgres database. If this returns "ok N", the runtime is parsing
+// .cms, the Postgres pool is reaching the database, and the BO/iterator
+// path is wired correctly.
+function ping()
+    set('rows', 0)
+    iterate sql.fetch("SELECT 1 AS hit FROM information_schema.tables WHERE table_schema = 'public' LIMIT 1")
+        set('rows', sum([rows], 1))
+    end-iterate
+    response.clearContent()
+    response.setContentType('text/plain')
+    response.write(concat('ok ', formatString('{0}', [rows]), chr(10)))
+    response.flush()
+    response.end()
+end-function

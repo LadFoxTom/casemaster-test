@@ -1,0 +1,52 @@
+{
+  "name": "cms-vercel",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Run CaseMaster .cms applications on Vercel",
+  "license": "UNLICENSED",
+  "homepage":   "https://github.com/LadFoxTom/Casemaster-Vercel",
+  "repository": "github:LadFoxTom/Casemaster-Vercel",
+  "bugs":       "https://github.com/LadFoxTom/Casemaster-Vercel/issues",
+  "keywords":   ["casemaster", "vercel", "serverless", "cms"],
+  "engines": {
+    "node": ">=20"
+  },
+  "main":   "./dist/index.js",
+  "types":  "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types":  "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build":          "tsc -p .",
+    "prepublishOnly": "npm run build"
+  },
+  "bin": {
+    "cms-vercel-bench":  "./bin/bench.mjs",
+    "cms-vercel-import": "./bin/import.mjs",
+    "cms-vercel-build":  "./bin/build.mjs"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "src",
+    "README.md",
+    "API.md",
+    "MIGRATION.md"
+  ],
+  "dependencies": {
+    "pg": "^8.13.0"
+  },
+  "peerDependencies": {
+    "@vercel/node": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/pg": "^8.11.0",
+    "@vercel/node": "^3.2.0",
+    "typescript": "^5.4.0"
+  }
+}

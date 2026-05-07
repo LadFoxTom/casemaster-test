@@ -1,0 +1,104 @@
+// Mini-CRM dashboard. Counts each table and shows the latest 5 rows for
+// each, demonstrating both `sql.fetch` (raw aggregate) and
+// `iterator.ofEntity` (BO-aware list) against the same Neon database.
+function home()
+
+    set('contactCount', 0)
+    iterate sql.fetch('SELECT count(*)::int AS n FROM crm_contact')
+        set('contactCount', bo.attr([r], 'n'))
+    end-iterate
+
+    set('taskCount', 0)
+    iterate sql.fetch('SELECT count(*)::int AS n FROM crm_task')
+        set('taskCount', bo.attr([r], 'n'))
+    end-iterate
+
+    set('contactRows', '')
+    iterate iterator.ofEntity(
+        entities: < <@iterator/entity name: 'c', entity: 'crm/contact', orderBy: '-id'> >,
+        rows: 5
+    )
+        set('contactRows', concat([contactRows],
+            '<tr><td>', formatString('{0}', bo.attr([c], 'id')), '</td>',
+            '<td>', bo.attr([c], 'full_name'), '</td>',
+            '<td>', bo.attr([c], 'email'), '</td>',
+            '<td>', bo.attr([c], 'company'), '</td>',
+            '<td><a href="/maintenance/crm/contact/edit?id=',
+            formatString('{0}', bo.attr([c], 'id')), '">edit</a></td></tr>'
+        ))
+    end-iterate
+
+    set('taskRows', '')
+    iterate iterator.ofEntity(
+        entities: < <@iterator/entity name: 't', entity: 'crm/task', orderBy: '-id'> >,
+        rows: 5
+    )
+        set('taskRows', concat([taskRows],
+            '<tr><td>', formatString('{0}', bo.attr([t], 'id')), '</td>',
+            '<td>', bo.attr([t], 'title'), '</td>',
+            '<td>', bo.attr([t], 'status'), '</td>',
+            '<td>', formatString('{0}', bo.attr([t], 'due_date')), '</td>',
+            '<td>contact #', formatString('{0}', bo.attr([t], 'contact_id')), '</td>',
+            '<td><a href="/maintenance/crm/task/edit?id=',
+            formatString('{0}', bo.attr([t], 'id')), '">edit</a></td></tr>'
+        ))
+    end-iterate
+
+    response.clearContent()
+    response.setContentType('text/html')
+    response.write(concat(
+        '<!doctype html><html lang="en"><head><meta charset="utf-8">',
+        '<meta name="viewport" content="width=device-width,initial-scale=1">',
+        '<title>Mini CRM &middot; cms-vercel demo</title>',
+        '<link rel="stylesheet" href="/static/css/app.css">',
+        '<style>',
+        'body{font-family:system-ui,sans-serif;padding:2rem;max-width:960px;margin:auto;color:#1f2937}',
+        'h1{margin-bottom:.25rem}h2{margin-top:2rem}',
+        '.sub{color:#64748b;margin-top:0}',
+        '.cards{display:flex;gap:1rem;margin:1rem 0}',
+        '.card{flex:1;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:1rem 1.25rem}',
+        '.card h3{margin:0;font-size:13px;color:#475569;text-transform:uppercase;letter-spacing:.05em}',
+        '.card .n{font-size:2rem;font-weight:600;color:#0f172a}',
+        '.card a{font-size:13px}',
+        'table{width:100%;border-collapse:collapse;margin-top:.5rem;font-size:14px}',
+        'th,td{padding:6px 10px;border-bottom:1px solid #e2e8f0;text-align:left}',
+        'th{font-weight:600;color:#475569;font-size:12px;text-transform:uppercase;letter-spacing:.05em}',
+        'a{color:#3b82f6;text-decoration:none}a:hover{text-decoration:underline}',
+        'footer{margin-top:3rem;padding-top:1rem;border-top:1px solid #e2e8f0;font-size:12px;color:#94a3b8}',
+        '</style></head><body>',
+
+        '<h1>Mini CRM</h1>',
+        '<p class="sub">A tiny CaseMaster app running on Vercel against Neon Postgres.</p>',
+
+        '<div class="cards">',
+        '<div class="card"><h3>Contacts</h3>',
+        '<div class="n">', formatString('{0}', [contactCount]), '</div>',
+        '<a href="/maintenance/crm/contact">manage &rarr;</a></div>',
+        '<div class="card"><h3>Tasks</h3>',
+        '<div class="n">', formatString('{0}', [taskCount]), '</div>',
+        '<a href="/maintenance/crm/task">manage &rarr;</a></div>',
+        '</div>',
+
+        '<h2>Latest contacts</h2>',
+        '<table><thead><tr><th>id</th><th>name</th><th>email</th><th>company</th><th></th></tr></thead>',
+        '<tbody>', [contactRows], '</tbody></table>',
+
+        '<h2>Latest tasks</h2>',
+        '<table><thead><tr><th>id</th><th>title</th><th>status</th><th>due</th><th>contact</th><th></th></tr></thead>',
+        '<tbody>', [taskRows], '</tbody></table>',
+
+        '<footer>',
+        'Routes: ',
+        '<a href="/page/foo/f/setup">/setup</a> &middot; ',
+        '<a href="/page/foo/f/ping">/ping</a> &middot; ',
+        '<a href="/page/foo/f/hello">/hello</a> &middot; ',
+        '<a href="/maintenance/crm/contact">/maintenance/crm/contact</a> &middot; ',
+        '<a href="/maintenance/crm/task">/maintenance/crm/task</a>',
+        '</footer>',
+
+        '</body></html>'
+    ))
+    response.flush()
+    response.end()
+
+end-function

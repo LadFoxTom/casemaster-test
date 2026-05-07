@@ -1,0 +1,48 @@
+function main()
+    return script.get('./main')
+end-function
+
+resource main
+    <@bo
+        label: 'Contact',
+        table: 'crm_contact',
+        primaryKey: 'id',
+        attributes: <
+            id: <@bo/attribute
+                label: 'ID',
+                column: 'id',
+                dataType: dataType.Long,
+                length: 9,
+                optional: false()
+            >,
+            full_name: <@bo/attribute
+                label: 'Full name',
+                column: 'full_name',
+                dataType: dataType.String,
+                length: 120,
+                optional: false()
+            >,
+            email: <@bo/attribute
+                label: 'Email',
+                column: 'email',
+                dataType: dataType.String,
+                length: 200
+            >,
+            company: <@bo/attribute
+                label: 'Company',
+                column: 'company',
+                dataType: dataType.String,
+                length: 120
+            >,
+            created_at: <@bo/attribute
+                label: 'Created',
+                column: 'created_at',
+                dataType: dataType.Timestamp
+            >
+        >,
+        attributeGroups: <
+            label: < 'full_name' >,
+            list:  < 'id', 'full_name', 'email', 'company', 'created_at' >
+        >
+    >
+end-resource

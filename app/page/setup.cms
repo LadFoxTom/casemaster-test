@@ -1,0 +1,73 @@
+// One-shot bootstrap. Hit /page/foo/f/setup once to create the demo schema
+// in the connected Postgres (Neon). Idempotent — CREATE TABLE IF NOT EXISTS
+// for both tables, plus a guarded INSERT that only seeds when crm_contact
+// is empty. Safe to call repeatedly.
+function setup()
+
+    sql.execute(concat(
+        'CREATE TABLE IF NOT EXISTS crm_contact (',
+            'id          BIGSERIAL    PRIMARY KEY, ',
+            'full_name   VARCHAR(120) NOT NULL, ',
+            'email       VARCHAR(200), ',
+            'company     VARCHAR(120), ',
+            'created_at  TIMESTAMPTZ  NOT NULL DEFAULT now()',
+        ')'
+    ))
+
+    sql.execute(concat(
+        'CREATE TABLE IF NOT EXISTS crm_task (',
+            'id          BIGSERIAL    PRIMARY KEY, ',
+            'contact_id  BIGINT       REFERENCES crm_contact(id) ON DELETE SET NULL, ',
+            'title       VARCHAR(200) NOT NULL, ',
+            'status      VARCHAR(20)  NOT NULL DEFAULT ', "'open'", ', ',
+            'due_date    DATE, ',
+            'created_at  TIMESTAMPTZ  NOT NULL DEFAULT now()',
+        ')'
+    ))
+
+    set('seeded', 0)
+    iterate sql.fetch('SELECT count(*)::int AS n FROM crm_contact')
+        if eq(bo.attr([r], 'n'), 0)
+            sql.execute(concat(
+                'INSERT INTO crm_contact (full_name, email, company) VALUES ',
+                "('Ada Lovelace',  'ada@analytical.example',  'Analytical Engine Co.'), ",
+                "('Grace Hopper',  'grace@navy.example',      'US Navy'), ",
+                "('Linus Torvalds','linus@kernel.example',    'Linux Foundation')"
+            ))
+            sql.execute(concat(
+                'INSERT INTO crm_task (contact_id, title, status, due_date) VALUES ',
+                "(1, 'Send welcome email',    'done', '2026-05-01'), ",
+                "(1, 'Schedule demo call',    'open', '2026-05-15'), ",
+                "(2, 'Review compiler notes', 'open', '2026-05-20'), ",
+                "(3, 'Discuss kernel patch',  'open', '2026-06-01'), ",
+                "(3, 'Follow up next week',   'open', '2026-05-12')"
+            ))
+            set('seeded', 1)
+        end-if
+    end-iterate
+
+    response.clearContent()
+    response.setContentType('text/html')
+    response.write(concat(
+        '<!doctype html><html><head><meta charset="utf-8">',
+        '<title>Setup · Mini CRM</title>',
+        '<link rel="stylesheet" href="/static/css/app.css">',
+        '<style>body{font-family:system-ui;padding:2rem;max-width:680px;margin:auto}',
+        'a{color:#3b82f6}.ok{color:#16a34a}</style></head><body>',
+        '<h1>Mini CRM &mdash; setup</h1>',
+        '<p class="ok">&#10003; tables ensured: <code>crm_contact</code>, <code>crm_task</code></p>',
+        '<p>',
+        if(eq([seeded], 1),
+            '<span class="ok">&#10003; seeded 3 contacts and 5 tasks</span>',
+            '<em>already populated &mdash; seed skipped</em>'
+        ),
+        '</p>',
+        '<p>Next: <a href="/page/foo/f/home">open the dashboard</a> &middot; ',
+        '<a href="/maintenance/crm/contact">contacts</a> &middot; ',
+        '<a href="/maintenance/crm/task">tasks</a></p>',
+        '</body></html>'
+    ))
+    response.flush()
+    response.end()
+
+end-function

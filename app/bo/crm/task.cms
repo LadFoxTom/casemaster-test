@@ -1,0 +1,54 @@
+function main()
+    return script.get('./main')
+end-function
+
+resource main
+    <@bo
+        label: 'Task',
+        table: 'crm_task',
+        primaryKey: 'id',
+        attributes: <
+            id: <@bo/attribute
+                label: 'ID',
+                column: 'id',
+                dataType: dataType.Long,
+                length: 9,
+                optional: false()
+            >,
+            contact_id: <@bo/attribute
+                label: 'Contact',
+                column: 'contact_id',
+                dataType: dataType.Long,
+                length: 9,
+                foreignKey: 'crm/contact'
+            >,
+            title: <@bo/attribute
+                label: 'Title',
+                column: 'title',
+                dataType: dataType.String,
+                length: 200,
+                optional: false()
+            >,
+            status: <@bo/attribute
+                label: 'Status',
+                column: 'status',
+                dataType: dataType.String,
+                length: 20
+            >,
+            due_date: <@bo/attribute
+                label: 'Due date',
+                column: 'due_date',
+                dataType: dataType.Date
+            >,
+            created_at: <@bo/attribute
+                label: 'Created',
+                column: 'created_at',
+                dataType: dataType.Timestamp
+            >
+        >,
+        attributeGroups: <
+            label: < 'title' >,
+            list:  < 'id', 'title', 'contact_id', 'status', 'due_date', 'created_at' >
+        >
+    >
+end-resource

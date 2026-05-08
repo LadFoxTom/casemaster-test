@@ -217,26 +217,75 @@ function coerce(v: string | null): unknown {
   return v;
 }
 
-function renderShell(_info: BOInfo, title: string, body: string): string {
+function renderShell(info: BOInfo, title: string, body: string): string {
+  // Highlight the matching nav item when the BO name maps to one of the
+  // demo's known sections. Unknown BOs leave every nav item inactive.
+  const active =
+    info.name === 'crm/contact' ? 'contacts' :
+    info.name === 'crm/task'    ? 'tasks'    : '';
+  const cls = (key: string) => active === key ? ' class="active"' : '';
+
   return `<!doctype html><html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(title)} · cms-vercel</title>
+<title>${esc(title)} · Mini CRM</title>
 <link rel="stylesheet" href="/static/css/app.css">
 <style>
-  body { font-family: system-ui; padding: 1rem 2rem; }
-  .cms-table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
-  .cms-table th, .cms-table td { padding: 6px 10px; border-bottom: 1px solid #e1e8ed; text-align: left; font-size: 13px; }
-  .cms-table th { font-weight: 600; color: #475569; }
+  /* Form/table styles specific to the auto-CRUD pages — the rest of the
+     visual identity comes from /static/css/app.css. */
+  .cms-table { border-collapse: collapse; width: 100%; margin-top: 1rem;
+               background: var(--surface); border: 1px solid var(--border);
+               border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+  .cms-table th, .cms-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); text-align: left; font-size: 13px; }
+  .cms-table thead th { background: var(--bg); color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .cms-table tbody tr:last-child td { border-bottom: none; }
+  .cms-table tbody tr:hover { background: #fafbfd; }
   .cms-actions { margin: 1rem 0; }
-  .cms-btn-primary { background: #3b82f6; color: #fff; border: none; padding: 6px 14px; border-radius: 5px; text-decoration: none; cursor: pointer; }
-  .cms-btn-secondary { background: #fff; border: 1px solid #cbd5e1; padding: 6px 14px; border-radius: 5px; text-decoration: none; color: #1f2937; margin-left: 8px; }
-  .cms-btn-danger { background: #fee2e2; color: #7f1d1d; border: 1px solid #dc2626; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
-  .cms-form { display: flex; flex-direction: column; gap: 12px; max-width: 560px; }
-  .cms-control { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #475569; }
-  .cms-control input, .cms-control textarea, .cms-control select { padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 13px; }
-  .cms-pagination { margin-top: 1rem; color: #475569; font-size: 12px; }
+  .cms-btn-primary, .cms-btn-secondary, .cms-btn-danger {
+    display: inline-block; padding: 6px 14px; border-radius: 7px; font-size: 13px;
+    font-weight: 500; cursor: pointer; text-decoration: none; border: 1px solid transparent;
+  }
+  .cms-btn-primary   { background: var(--accent);  color: #fff !important; border-color: var(--accent); }
+  .cms-btn-primary:hover { background: var(--accent-d); border-color: var(--accent-d); }
+  .cms-btn-secondary { background: var(--surface); color: var(--text);     border-color: var(--border); margin-left: 8px; }
+  .cms-btn-secondary:hover { background: var(--bg); }
+  .cms-btn-danger    { background: #fee2e2; color: #7f1d1d; border-color: #fecaca; padding: 2px 8px; font-size: 12px; }
+  .cms-btn-danger:hover { background: #fecaca; }
+  .cms-form { display: flex; flex-direction: column; gap: 12px; max-width: 560px;
+              background: var(--surface); border: 1px solid var(--border);
+              border-radius: var(--radius); padding: 1.25rem 1.5rem; box-shadow: var(--shadow); }
+  .cms-control { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); }
+  .cms-control span { font-weight: 500; }
+  .cms-control input, .cms-control textarea, .cms-control select {
+    padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 13px; font-family: inherit;
+  }
+  .cms-control input:focus, .cms-control textarea:focus { outline: none; border-color: var(--accent); }
+  .cms-pagination { margin-top: 1rem; color: var(--muted); font-size: 12px; }
 </style></head>
-<body><h1>${esc(title)}</h1>${body}</body></html>`;
+<body>
+
+<header class="app-nav">
+  <div class="brand">Mini CRM <span class="tag">Casemaster 2.0 demo</span></div>
+  <nav>
+    <a href="/">Welcome</a>
+    <a href="/page/foo/f/home">Dashboard</a>
+    <a href="/maintenance/crm/contact"${cls('contacts')}>Contacts</a>
+    <a href="/maintenance/crm/task"${cls('tasks')}>Tasks</a>
+    <a href="/page/foo/f/setup">Setup</a>
+  </nav>
+</header>
+
+<main class="app-main">
+  <h1>${esc(title)}</h1>
+  ${body}
+</main>
+
+<footer class="app-footer">
+  <span>Mini CRM &middot; a Casemaster 2.0 application running on cms-vercel</span>
+  <span><a href="https://docs.casemaster.io/" target="_blank" rel="noopener">docs.casemaster.io</a></span>
+</footer>
+
+</body></html>`;
 }
 
 function esc(s: string): string {

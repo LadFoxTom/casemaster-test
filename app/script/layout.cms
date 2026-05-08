@@ -1,0 +1,45 @@
+// Shared chrome for every dynamic page in this demo. Returns HTML
+// strings that pages concatenate around their own body. Call from a
+// page with:
+//
+//     response.write(script.call('./pageHeader', 'home', 'Dashboard'))
+//     ...page-specific content...
+//     response.write(script.call('./pageFooter'))
+//
+// `activeKey` is one of 'home' | 'contacts' | 'tasks' | 'setup' and
+// controls which nav item gets the highlighted style.
+
+function pageHeader(activeKey, pageTitle)
+    return concat(
+        '<!doctype html><html lang="en"><head>',
+        '<meta charset="utf-8">',
+        '<meta name="viewport" content="width=device-width,initial-scale=1">',
+        '<title>', [pageTitle], ' &middot; Mini CRM</title>',
+        '<link rel="stylesheet" href="/static/css/app.css">',
+        '</head><body>',
+
+        '<header class="app-nav">',
+        '<div class="brand">Mini CRM <span class="tag">Casemaster 2.0 demo</span></div>',
+        '<nav>',
+            '<a href="/">Welcome</a>',
+            '<a href="/page/foo/f/home" class="',     if(eq([activeKey], 'home'),     'active', ''), '">Dashboard</a>',
+            '<a href="/maintenance/crm/contact" class="', if(eq([activeKey], 'contacts'), 'active', ''), '">Contacts</a>',
+            '<a href="/maintenance/crm/task" class="',    if(eq([activeKey], 'tasks'),    'active', ''), '">Tasks</a>',
+            '<a href="/page/foo/f/setup" class="',    if(eq([activeKey], 'setup'),    'active', ''), '">Setup</a>',
+        '</nav>',
+        '</header>',
+
+        '<main class="app-main">'
+    )
+end-function
+
+function pageFooter()
+    return concat(
+        '</main>',
+        '<footer class="app-footer">',
+        '<span>Mini CRM &middot; a Casemaster 2.0 application running on cms-vercel</span>',
+        '<span><a href="https://docs.casemaster.io/" target="_blank" rel="noopener">docs.casemaster.io</a></span>',
+        '</footer>',
+        '</body></html>'
+    )
+end-function

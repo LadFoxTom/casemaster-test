@@ -48,25 +48,33 @@ function setup()
 
     response.clearContent()
     response.setContentType('text/html')
+    response.write(script.call('./pageHeader', 'setup', 'Setup'))
     response.write(concat(
-        '<!doctype html><html><head><meta charset="utf-8">',
-        '<title>Setup · Mini CRM</title>',
-        '<link rel="stylesheet" href="/static/css/app.css">',
-        '<style>body{font-family:system-ui;padding:2rem;max-width:680px;margin:auto}',
-        'a{color:#3b82f6}.ok{color:#16a34a}</style></head><body>',
-        '<h1>Mini CRM &mdash; setup</h1>',
-        '<p class="ok">&#10003; tables ensured: <code>crm_contact</code>, <code>crm_task</code></p>',
+        '<h1>Setup</h1>',
+        '<p class="lead">Create the demo schema and seed sample rows. ',
+        'Idempotent &mdash; safe to run again at any time.</p>',
+
+        '<div class="banner ok">',
+            '&#10003; Tables ensured: <code>crm_contact</code>, <code>crm_task</code>',
+        '</div>',
+
+        '<div class="banner ',
+            if(eq([seeded], 1), 'ok', 'warn'),
+        '">',
+            if(eq([seeded], 1),
+                '&#10003; Seeded 3 contacts and 5 tasks.',
+                'Tables already populated &mdash; seed step skipped.'
+            ),
+        '</div>',
+
+        '<h2>Next</h2>',
         '<p>',
-        if(eq([seeded], 1),
-            '<span class="ok">&#10003; seeded 3 contacts and 5 tasks</span>',
-            '<em>already populated &mdash; seed skipped</em>'
-        ),
-        '</p>',
-        '<p>Next: <a href="/page/foo/f/home">open the dashboard</a> &middot; ',
-        '<a href="/maintenance/crm/contact">contacts</a> &middot; ',
-        '<a href="/maintenance/crm/task">tasks</a></p>',
-        '</body></html>'
+            '<a class="btn" href="/page/foo/f/home">Open the dashboard &rarr;</a> ',
+            '<a class="btn secondary" href="/maintenance/crm/contact">Manage contacts</a> ',
+            '<a class="btn secondary" href="/maintenance/crm/task">Manage tasks</a>',
+        '</p>'
     ))
+    response.write(script.call('./pageFooter'))
     response.flush()
     response.end()
 

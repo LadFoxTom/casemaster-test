@@ -12,12 +12,17 @@ app/
 ├── bo/crm/
 │   ├── contact.cms       — Contact BO (table: crm_contact)
 │   └── task.cms          — Task BO    (table: crm_task, FK → contact)
-└── page/
-    ├── setup.cms         — one-shot DDL bootstrap + seed
-    ├── home.cms          — dashboard: counts + latest 5 of each
-    ├── ping.cms          — DB connectivity check (text/plain)
-    └── hello.cms         — qualifier-rendered HTML demo
+├── page/
+│   ├── setup.cms         — one-shot DDL bootstrap + seed
+│   ├── home.cms          — dashboard: counts + latest 5 of each
+│   ├── ping.cms          — DB connectivity check (text/plain)
+│   └── hello.cms         — qualifier-rendered HTML demo
+└── script/
+    └── layout.cms        — shared pageHeader / pageFooter (top nav)
 ```
+
+The static welcome page at `/` (`public/index.html`) explains how to
+build a Casemaster 2.0 application and links into the demo.
 
 Two BOs, two new pages, two demo pages from the runtime — that's the
 whole app.
